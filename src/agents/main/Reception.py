@@ -1,17 +1,24 @@
 from ai_engine import UAgentResponse, UAgentResponseType
+from pydantic import Field
 
-class News(Model):
-    news : str = Field("")
-
-Checkup_Protocol = Protocol("News System")
-
-
-@Checkup_Protocol.on_message(model=News, replies = UAgentResponse)
-async def on_news_request(ctx: Context, sender: str, msg: News):
-    final_news = f"News Received from Agent: {msg.news}"
-    ctx.logger.info(f"Received news request from {sender} with prompt: {final_news}")
-    await ctx.send(sender, UAgentResponse(message = final_news, type = UAgentResponseType.FINAL))
+class Booking(Model):
+    symptoms : str = Field("List of symptoms related to the sickess that you have: ")
+    disease : str = Field("Disease that matches with the symptom provided")
+    doctor: str = Field("Doctors found that matches the most with the given Symptoms and Disease")
 
 
+checkup_protocol = Protocol("Medical Assist System")
+@checkup_protocol.on_message(model=Booking, replies = UAgentResponse)
+async def on_medical_analysis(ctx: Context, sender: str, msg: Booking):
+    report_data = f"""
+        Report for your medical analysis ----
+        
+        Symptoms: {msg.symptoms}
+        Disease: {msg.disease}
+        Doctor Assigned: {msg.doctor}
+    """
+    await ctx.send(sender, UAgentResponse(message = report_data, type = UAgentResponseType.FINAL))
 
-agent.include(news_protocol)
+
+
+agent.include(checkup_protocol)
